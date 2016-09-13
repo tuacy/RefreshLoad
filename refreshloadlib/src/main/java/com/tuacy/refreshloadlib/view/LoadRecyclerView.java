@@ -14,6 +14,13 @@ public class LoadRecyclerView extends RecyclerView {
 	private LoadRecyclerBaseAdapter mAdapter;
 	private LinearLayoutManager     mLayoutManager;
 	private int                     mLastVisibleItem;
+	private OnLoadMoreListener      mListener;
+	private boolean                 mIsLoading;
+
+	public interface OnLoadMoreListener {
+
+		void onLoadMore();
+	}
 
 	public LoadRecyclerView(Context context) {
 		this(context, null);
@@ -36,8 +43,11 @@ public class LoadRecyclerView extends RecyclerView {
 			@Override
 			public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
 				super.onScrollStateChanged(recyclerView, newState);
-				if (newState == RecyclerView.SCROLL_STATE_IDLE && mLastVisibleItem + 1 == mAdapter.getItemCount()) {
-
+				if (newState == RecyclerView.SCROLL_STATE_IDLE && mLastVisibleItem + 1 == mAdapter.getItemCount() && !mIsLoading) {
+					mIsLoading = true;
+					if (mListener != null) {
+						mListener.onLoadMore();
+					}
 				}
 			}
 
@@ -47,6 +57,17 @@ public class LoadRecyclerView extends RecyclerView {
 				mLastVisibleItem = mLayoutManager.findLastVisibleItemPosition();
 			}
 		});
+	}
+
+	public void setOnLoadMoreListener(OnLoadMoreListener listener) {
+		mListener = listener;
+	}
+
+	/**
+	 * 加载完成
+	 */
+	public void completeLoadMore() {
+		mIsLoading = false;
 	}
 
 	@Override

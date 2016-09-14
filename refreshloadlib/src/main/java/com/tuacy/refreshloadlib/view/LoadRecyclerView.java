@@ -10,12 +10,16 @@ import com.tuacy.refreshloadlib.adapter.LoadRecyclerBaseAdapter;
 
 public class LoadRecyclerView extends RecyclerView {
 
-	private Context                 mContext;
+	public static final int LOAD_STATE_START           = 0;
+	public static final int LOAD_STATE_DOING           = 1;
+	public static final int LOAD_STATE_COMPLETE_SINGLE = 2;
+	public static final int LOAD_STATE_COMPLETE_ALL    = 3;
+
 	private LoadRecyclerBaseAdapter mAdapter;
 	private LinearLayoutManager     mLayoutManager;
 	private int                     mLastVisibleItem;
 	private OnLoadMoreListener      mListener;
-	private boolean                 mIsLoading;
+	private int                     mCurrentLoadState;
 
 	public interface OnLoadMoreListener {
 
@@ -32,22 +36,26 @@ public class LoadRecyclerView extends RecyclerView {
 
 	public LoadRecyclerView(Context context, @Nullable AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
-		mContext = context;
 		init();
 	}
 
 	private void init() {
+		mCurrentLoadState = LOAD_STATE_START;
 		// 监听RecyclerView滑动过程
 		addOnScrollListener(new OnScrollListener() {
 			// OnScrollListener
 			@Override
 			public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
 				super.onScrollStateChanged(recyclerView, newState);
-				if (newState == RecyclerView.SCROLL_STATE_IDLE && mLastVisibleItem + 1 == mAdapter.getItemCount() && !mIsLoading) {
-					mIsLoading = true;
-					if (mListener != null) {
-						mListener.onLoadMore();
-					}
+				if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+					// 为了避免当没有满一个屏幕的时候加载不了的问题
+					mLastVisibleItem = mLayoutManager.findLastVisibleItemPosition();
+				}
+				if (newState == RecyclerView.SCROLL_STATE_IDLE && mLastVisibleItem + 1 == mAdapter.getItemCount() && mListener != null &&
+					mCurrentLoadState != LOAD_STATE_DOING) {
+					mCurrentLoadState = LOAD_STATE_DOING;
+					mAdapter.setLoadState(mCurrentLoadState);
+					mListener.onLoadMore();
 				}
 			}
 
@@ -66,8 +74,14 @@ public class LoadRecyclerView extends RecyclerView {
 	/**
 	 * 加载完成
 	 */
-	public void completeLoadMore() {
-		mIsLoading = false;
+	public void completeLoadSingle() {
+		mCurrentLoadState = LOAD_STATE_COMPLETE_SINGLE;
+		mAdapter.setLoadState(mCurrentLoadState);
+	}
+
+	public void completeLoadAll() {
+		mCurrentLoadState = LOAD_STATE_COMPLETE_ALL;
+		mAdapter.setLoadState(mCurrentLoadState);
 	}
 
 	@Override

@@ -1,36 +1,53 @@
 package com.tuacy.refreshloadlib.adapter;
 
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
-import com.tuacy.refreshloadlib.R;
+import com.tuacy.refreshloadlib.view.LoadRecyclerView;
 
 /**
  * 用最后一个item来显示正在加载中
  */
 public abstract class LoadRecyclerBaseAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-	protected static final int TYPE_ITEM   = 0;
-	protected static final int TYPE_FOOTER = 1;
+	private static final int TYPE_ITEM   = 0;
+	private static final int TYPE_FOOTER = 1;
+	private static final int TYPE_EMPTY  = 2;
 
-	public void fullyLoad() {
+	private int mLoadState;
 
+	public LoadRecyclerBaseAdapter() {
+		mLoadState = LoadRecyclerView.LOAD_STATE_START;
+	}
+
+	public void setLoadState(int state) {
+		mLoadState = state;
+		// 只刷新最后一项，即load的那一项
+		notifyItemChanged(getItemCount() - 1);
 	}
 
 	public abstract int onItemCount();
 
 	/**
-	 * item viewHolder
+	 * 内容区域
 	 */
 	public abstract RecyclerView.ViewHolder onCreateItemViewHolder(ViewGroup parent, int viewType);
 
-	/**
-	 * bind itemViewHolder
-	 */
 	public abstract void onBindItemViewHolder(RecyclerView.ViewHolder holder, final int position);
+
+	/**
+	 * 加载的时候显示的load区域
+	 */
+	public abstract RecyclerView.ViewHolder onCreateLoadViewHolder(ViewGroup parent, int viewType, int loadState);
+
+	public abstract void onBindLoadViewHolder(RecyclerView.ViewHolder holder, final int position, int loadState);
+
+	/**
+	 * 没有内容
+	 */
+	public abstract RecyclerView.ViewHolder onCreateEmptyViewHolder(ViewGroup parent, int viewType);
+
+	public abstract void onBindEmptyViewHolder(RecyclerView.ViewHolder holder, final int position);
 
 	@Override
 	public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -38,7 +55,9 @@ public abstract class LoadRecyclerBaseAdapter extends RecyclerView.Adapter<Recyc
 			case TYPE_ITEM:
 				return onCreateItemViewHolder(parent, viewType);
 			case TYPE_FOOTER:
-				return new LoadViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_recycler_load, parent, false));
+				return onCreateLoadViewHolder(parent, viewType, mLoadState);
+			case TYPE_EMPTY:
+				return onCreateEmptyViewHolder(parent, viewType);
 		}
 		return null;
 	}
@@ -50,13 +69,20 @@ public abstract class LoadRecyclerBaseAdapter extends RecyclerView.Adapter<Recyc
 				onBindItemViewHolder(holder, position);
 				break;
 			case TYPE_FOOTER:
-				LoadViewHolder loadHolder = (LoadViewHolder) holder;
+				onBindLoadViewHolder(holder, position, mLoadState);
+				break;
+			case TYPE_EMPTY:
+				onBindEmptyViewHolder(holder, position);
 				break;
 		}
 	}
 
 	@Override
 	public int getItemViewType(int position) {
+		if (getItemCount() == 1 && position == 0) {
+			// 说明是没有数据的，LIST为空
+			return TYPE_EMPTY;
+		}
 		if (position + 1 == getItemCount()) {
 			// 最后一个用来显示加载中
 			return TYPE_FOOTER;
@@ -73,16 +99,5 @@ public abstract class LoadRecyclerBaseAdapter extends RecyclerView.Adapter<Recyc
 	@Override
 	public int getItemCount() {
 		return onItemCount() + 1;
-	}
-
-	class LoadViewHolder extends RecyclerView.ViewHolder {
-
-		TextView mLoadText;
-
-		public LoadViewHolder(View view) {
-			super(view);
-			mLoadText = (TextView) view.findViewById(R.id.text_view_load_text);
-		}
-
 	}
 }

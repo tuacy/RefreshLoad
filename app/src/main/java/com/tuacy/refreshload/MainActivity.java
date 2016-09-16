@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 	private SwipeRefreshLayout mSwipeRefresh;
 	private LoadRecyclerView   mLoadRecyclerView;
 	private Handler            mHandler;
+	private int                mLoadNumber;
 
 
 	@Override
@@ -73,14 +74,20 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 				refreshData.add(" refresh 2");
 				mAdapter.setData(refreshData);
 				mSwipeRefresh.setRefreshing(false);
-				mLoadRecyclerView.completeLoadSingle();
+				mLoadRecyclerView.reset();
+				mLoadNumber = 0;
 				break;
 			case MESSAGE_LOAD:
 				List<String> loadData = new ArrayList<>();
 				loadData.add(" load 1");
 				loadData.add(" load 2");
 				mAdapter.loadModeData(loadData);
-				mLoadRecyclerView.completeLoadSingle();
+				if (mLoadNumber == 3) {
+					mLoadRecyclerView.completeLoadAll();
+				} else {
+					mLoadRecyclerView.completeLoadSingle();
+				}
+				mLoadNumber++;
 				break;
 		}
 	}

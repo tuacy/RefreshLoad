@@ -10,7 +10,7 @@ import com.tuacy.refreshloadlib.adapter.LoadRecyclerBaseAdapter;
 
 public class LoadRecyclerView extends RecyclerView {
 
-	public static final int LOAD_STATE_START           = 0;
+	public static final int LOAD_STATE_PREPARE         = 0;
 	public static final int LOAD_STATE_DOING           = 1;
 	public static final int LOAD_STATE_COMPLETE_SINGLE = 2;
 	public static final int LOAD_STATE_COMPLETE_ALL    = 3;
@@ -40,7 +40,7 @@ public class LoadRecyclerView extends RecyclerView {
 	}
 
 	private void init() {
-		mCurrentLoadState = LOAD_STATE_START;
+		mCurrentLoadState = LOAD_STATE_PREPARE;
 		// 监听RecyclerView滑动过程
 		addOnScrollListener(new OnScrollListener() {
 			// OnScrollListener
@@ -51,7 +51,8 @@ public class LoadRecyclerView extends RecyclerView {
 					// 为了避免当没有满一个屏幕的时候加载不了的问题
 					mLastVisibleItem = mLayoutManager.findLastVisibleItemPosition();
 				}
-				if (newState == RecyclerView.SCROLL_STATE_IDLE && mLastVisibleItem + 1 == mAdapter.getItemCount() && mListener != null &&
+				if (newState == RecyclerView.SCROLL_STATE_IDLE && mCurrentLoadState != LOAD_STATE_COMPLETE_ALL &&
+					mLastVisibleItem + 1 == mAdapter.getItemCount() && mListener != null &&
 					mCurrentLoadState != LOAD_STATE_DOING) {
 					mCurrentLoadState = LOAD_STATE_DOING;
 					mAdapter.setLoadState(mCurrentLoadState);
@@ -76,11 +77,17 @@ public class LoadRecyclerView extends RecyclerView {
 	 */
 	public void completeLoadSingle() {
 		mCurrentLoadState = LOAD_STATE_COMPLETE_SINGLE;
+		mCurrentLoadState = LOAD_STATE_PREPARE;
 		mAdapter.setLoadState(mCurrentLoadState);
 	}
 
 	public void completeLoadAll() {
 		mCurrentLoadState = LOAD_STATE_COMPLETE_ALL;
+		mAdapter.setLoadState(mCurrentLoadState);
+	}
+
+	public void reset() {
+		mCurrentLoadState = LOAD_STATE_PREPARE;
 		mAdapter.setLoadState(mCurrentLoadState);
 	}
 

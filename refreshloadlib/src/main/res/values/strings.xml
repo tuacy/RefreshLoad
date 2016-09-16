@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">RefreshLoadLib</string>
+    <string name="start_loading">上拉加载</string>
+    <string name="do_loading">加载中</string>
+    <string name="complete_loading">加载完成</string>
+    <string name="no_loading">没有更多数据了</string>
 </resources>

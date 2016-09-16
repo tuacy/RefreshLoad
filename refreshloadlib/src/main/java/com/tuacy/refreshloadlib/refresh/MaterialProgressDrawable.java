@@ -297,7 +297,7 @@ public class MaterialProgressDrawable extends Drawable implements Animatable {
 		mRing.setShowArrow(false);
 		mRing.setColorIndex(0);
 		// 并且将进度条长度归零
-		mRing.resetOriginals();
+//		mRing.resetOriginals();
 	}
 
 	private float getMinProgressArc(MaterialProgressDrawable.Ring ring) {

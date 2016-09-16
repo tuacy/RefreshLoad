@@ -17,7 +17,7 @@ public abstract class LoadRecyclerBaseAdapter extends RecyclerView.Adapter<Recyc
 	private int mLoadState;
 
 	public LoadRecyclerBaseAdapter() {
-		mLoadState = LoadRecyclerView.LOAD_STATE_START;
+		mLoadState = LoadRecyclerView.LOAD_STATE_PREPARE;
 	}
 
 	public void setLoadState(int state) {

@@ -9,7 +9,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.tuacy.refreshloadlib.adapter.LoadRecyclerBaseAdapter;
+import com.tuacy.refreshloadlib.view.DefaultTextLoadingView;
 import com.tuacy.refreshloadlib.view.LoadRecyclerView;
+import com.tuacy.refreshloadlib.view.loadingview.DefaultProgressLoadingView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,24 +60,32 @@ public class LoadAdapter extends LoadRecyclerBaseAdapter {
 
 	@Override
 	public RecyclerView.ViewHolder onCreateLoadViewHolder(ViewGroup parent, int viewType, int loadState) {
-		return new LoadHolder(LayoutInflater.from(mContext).inflate(R.layout.item_list_load, parent, false));
+		return new LoadHolder(LayoutInflater.from(mContext).inflate(R.layout.item_list_load_progress, parent, false));
 	}
 
 	@Override
 	public void onBindLoadViewHolder(RecyclerView.ViewHolder holder, int position, int loadState) {
 		LoadHolder loadHolder = (LoadHolder) holder;
 		switch (loadState) {
-			case LoadRecyclerView.LOAD_STATE_START:
-				loadHolder.mViewLoad.setText(R.string.start_loading);
+			case LoadRecyclerView.LOAD_STATE_PREPARE:
+				loadHolder.mNoLoadData.setVisibility(View.GONE);
+				loadHolder.mViewLoad.setVisibility(View.VISIBLE);
+				loadHolder.mViewLoad.prepareLoading();
 				break;
 			case LoadRecyclerView.LOAD_STATE_DOING:
-				loadHolder.mViewLoad.setText(R.string.do_loading);
+				loadHolder.mNoLoadData.setVisibility(View.GONE);
+				loadHolder.mViewLoad.setVisibility(View.VISIBLE);
+				loadHolder.mViewLoad.doLoading();
 				break;
 			case LoadRecyclerView.LOAD_STATE_COMPLETE_SINGLE:
-				loadHolder.mViewLoad.setText(R.string.complete_loading);
+				loadHolder.mNoLoadData.setVisibility(View.GONE);
+				loadHolder.mViewLoad.setVisibility(View.VISIBLE);
+				loadHolder.mViewLoad.singleLoadingComplete();
 				break;
 			case LoadRecyclerView.LOAD_STATE_COMPLETE_ALL:
-				loadHolder.mViewLoad.setText(R.string.no_loading);
+				loadHolder.mNoLoadData.setVisibility(View.VISIBLE);
+				loadHolder.mViewLoad.setVisibility(View.GONE);
+				loadHolder.mViewLoad.allLoadingComplete();
 				break;
 		}
 	}
@@ -100,13 +110,27 @@ public class LoadAdapter extends LoadRecyclerBaseAdapter {
 		}
 	}
 
+	//	private class LoadHolder extends RecyclerView.ViewHolder {
+	//
+	//		private DefaultTextLoadingView mViewLoad;
+	//		private TextView               mNoLoadData;
+	//
+	//		LoadHolder(View itemView) {
+	//			super(itemView);
+	//			mViewLoad = (DefaultTextLoadingView) itemView.findViewById(R.id.layout_loading);
+	//			mNoLoadData = (TextView) itemView.findViewById(R.id.text_view_all_load_complete);
+	//		}
+	//	}
+
 	private class LoadHolder extends RecyclerView.ViewHolder {
 
-		private TextView mViewLoad;
+		private DefaultProgressLoadingView mViewLoad;
+		private TextView                   mNoLoadData;
 
 		LoadHolder(View itemView) {
 			super(itemView);
-			mViewLoad = (TextView) itemView.findViewById(R.id.text_view_load);
+			mViewLoad = (DefaultProgressLoadingView) itemView.findViewById(R.id.layout_loading);
+			mNoLoadData = (TextView) itemView.findViewById(R.id.text_view_all_load_complete);
 		}
 	}
 
@@ -117,6 +141,7 @@ public class LoadAdapter extends LoadRecyclerBaseAdapter {
 		EmptyHolder(View itemView) {
 			super(itemView);
 			mViewEmpty = (TextView) itemView.findViewById(R.id.text_view_empty);
+
 		}
 	}
 }
